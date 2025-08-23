@@ -16,7 +16,8 @@ class SocketManager {
   connect(): Socket {
     if (!this.socket) {
       // Connect to the backend server
-      this.socket = io("http://localhost:3001", {
+      const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL || "http://localhost:3001";
+      this.socket = io(socketUrl, {
         autoConnect: true,
         transports: ['websocket', 'polling'],
         timeout: 5000,
