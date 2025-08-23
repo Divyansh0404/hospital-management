@@ -2,7 +2,20 @@ const mongoose = require('mongoose');
 
 const connectDB = async () => {
   try {
-    const conn = await mongoose.connect(process.env.MONGODB_URI, {
+    // Try different environment variable names that Railway might use
+    const mongoUri = process.env.MONGODB_URI || process.env.DATABASE_URL || process.env.MONGO_URL;
+    
+    console.log('🔍 Database URI Check:');
+    console.log('MONGODB_URI:', !!process.env.MONGODB_URI);
+    console.log('DATABASE_URL:', !!process.env.DATABASE_URL);
+    console.log('MONGO_URL:', !!process.env.MONGO_URL);
+    console.log('Using URI:', mongoUri ? 'Found' : 'NOT FOUND');
+    
+    if (!mongoUri) {
+      throw new Error('No MongoDB URI found in environment variables');
+    }
+    
+    const conn = await mongoose.connect(mongoUri, {
       useNewUrlParser: true,
       useUnifiedTopology: true,
     });
