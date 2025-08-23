@@ -69,6 +69,8 @@ export default function PatientsPage() {
     name: "",
     age: "",
     contactNumber: "",
+    condition: "Stable",
+    priority: "3",
     medicalHistory: "",
     allergies: "",
     emergencyContactName: "",
@@ -179,6 +181,8 @@ export default function PatientsPage() {
           name: newPatient.name,
           age: Number.parseInt(newPatient.age),
           contactNumber: newPatient.contactNumber,
+          condition: newPatient.condition,
+          priority: Number.parseInt(newPatient.priority),
           medicalHistory: newPatient.medicalHistory || undefined,
           allergies: newPatient.allergies ? newPatient.allergies.split(',').map(a => a.trim()) : [],
           emergencyContact: {
@@ -202,6 +206,8 @@ export default function PatientsPage() {
             name: "",
             age: "",
             contactNumber: "",
+            condition: "Stable",
+            priority: "3",
             medicalHistory: "",
             allergies: "",
             emergencyContactName: "",
@@ -342,6 +348,38 @@ export default function PatientsPage() {
                     onChange={(e) => setNewPatient({ ...newPatient, contactNumber: e.target.value })}
                     className="col-span-3"
                   />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="condition" className="text-right">
+                    Condition
+                  </Label>
+                  <select
+                    id="condition"
+                    value={newPatient.condition}
+                    onChange={(e) => setNewPatient({ ...newPatient, condition: e.target.value })}
+                    className="col-span-3 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    <option value="Normal">Normal</option>
+                    <option value="Stable">Stable</option>
+                    <option value="Critical">Critical</option>
+                  </select>
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="priority" className="text-right">
+                    Priority
+                  </Label>
+                  <select
+                    id="priority"
+                    value={newPatient.priority}
+                    onChange={(e) => setNewPatient({ ...newPatient, priority: e.target.value })}
+                    className="col-span-3 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    <option value="5">5 - Normal</option>
+                    <option value="4">4 - Low</option>
+                    <option value="3">3 - Medium</option>
+                    <option value="2">2 - High</option>
+                    <option value="1">1 - Critical</option>
+                  </select>
                 </div>
                 <div className="grid grid-cols-4 items-center gap-4">
                   <Label htmlFor="medicalHistory" className="text-right">
