@@ -6,7 +6,9 @@
     "build": "next build",
     "dev": "next dev",
     "lint": "next lint",
-    "start": "next start"
+    "start": "cd backend && npm start",
+    "railway:build": "cd backend && npm install",
+    "railway:start": "cd backend && npm start"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
