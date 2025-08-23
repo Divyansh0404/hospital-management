@@ -104,11 +104,9 @@ const changePasswordValidation = [
 /**
  * @route   POST /api/auth/register
  * @desc    Register a new user
- * @access  Private (Admin only)
+ * @access  Public (Temporarily for demo)
  */
 router.post('/register', 
-  authenticateToken,
-  authorizeRoles('Admin'),
   registerValidation, 
   AuthController.register
 );
