@@ -34,18 +34,38 @@ A modern, full-stack hospital management application built with Next.js, Node.js
 
 ## Live Demo
 
-- **Frontend**: [Hospital Management System](https://your-app.vercel.app)
-- **API**: [Backend API](https://your-backend.railway.app)
+- **Frontend**: [Hospital Management System](https://hospital-management-divyansh.vercel.app) *(Coming Soon)*
+- **API**: [Backend API](https://hospital-management-backend.railway.app) *(Coming Soon)*
+- **GitHub**: [Source Code](https://github.com/Divyansh0404/hospital-management)
 
 ## Local Development
 
-1. Clone the repository
-2. Install dependencies: `npm install` & `cd backend && npm install`
-3. Set up environment variables
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/Divyansh0404/hospital-management.git
+   cd hospital-management
+   ```
+
+2. Install dependencies:
+   ```bash
+   npm install
+   cd backend && npm install
+   ```
+
+3. Set up environment variables (create `.env` files)
+
 4. Run development servers:
-   - Frontend: `npm run dev`
-   - Backend: `cd backend && npm start`
+   ```bash
+   # Frontend (port 3000)
+   npm run dev
+   
+   # Backend (port 3001)
+   cd backend && npm start
+   ```
 
 ## Contact
 
-Built by [Your Name] - [your.email@example.com]
+**Divyansh Rustagi**  
+📧 dr9743@srmist.edu.in  
+🔗 [GitHub](https://github.com/Divyansh0404)  
+💼 [LinkedIn](https://linkedin.com/in/divyansh-rustagi) *(Add your LinkedIn)*
