@@ -36,7 +36,8 @@ const io = new Server(server, {
       "http://localhost:3000",
       "http://localhost:3001", 
       "http://localhost:3002",
-      "https://hospital-management-eosin-one.vercel.app"
+      "https://hospital-management-eosin-one.vercel.app",
+      "https://visionary-brigadeiros-5fc1fd.netlify.app"
     ],
     methods: ["GET", "POST"],
     credentials: true
@@ -72,7 +73,8 @@ app.use(cors({
       'http://127.0.0.1:3000',
       'http://127.0.0.1:3001',
       'http://127.0.0.1:3002',
-      'https://hospital-management-eosin-one.vercel.app'
+      'https://hospital-management-eosin-one.vercel.app',
+      'https://visionary-brigadeiros-5fc1fd.netlify.app'
     ];
     
     if (allowedOrigins.indexOf(origin) !== -1) {
