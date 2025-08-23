@@ -35,7 +35,8 @@ const io = new Server(server, {
     origin: [
       "http://localhost:3000",
       "http://localhost:3001", 
-      "http://localhost:3002"
+      "http://localhost:3002",
+      "https://hospital-management-eosin-one.vercel.app"
     ],
     methods: ["GET", "POST"],
     credentials: true
@@ -70,7 +71,8 @@ app.use(cors({
       'http://localhost:3002',
       'http://127.0.0.1:3000',
       'http://127.0.0.1:3001',
-      'http://127.0.0.1:3002'
+      'http://127.0.0.1:3002',
+      'https://hospital-management-eosin-one.vercel.app'
     ];
     
     if (allowedOrigins.indexOf(origin) !== -1) {
