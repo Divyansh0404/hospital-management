@@ -29,14 +29,39 @@ A modern, full-stack hospital management application built with Next.js, Node.js
 
 ## Demo Credentials
 
-- **Email**: admin@hospital.com
-- **Password**: admin123
+- **Email**: test@hospital.com
+- **Password**: test123
 
 ## Live Demo
 
-- **Frontend**: [Hospital Management System](https://hospital-management-divyansh.vercel.app) *(Coming Soon)*
-- **API**: [Backend API](https://hospital-management-backend.railway.app) *(Coming Soon)*
+- **Frontend**: [Hospital Management System](https://visionary-brigadeiros-5fc1fd.netlify.app)
+- **API**: [Backend API](https://web-production-68a4f3.up.railway.app)
 - **GitHub**: [Source Code](https://github.com/Divyansh0404/hospital-management)
+
+## API Endpoints
+
+- **Health Check**: `GET /health`
+- **Authentication**: `POST /api/auth/login`, `POST /api/auth/register`
+- **Patients**: `GET /api/patients`, `POST /api/patients`, `PUT /api/patients/:id`
+- **Rooms**: `GET /api/rooms`, `POST /api/rooms`, `PUT /api/rooms/:id`
+- **Room Assignment**: `POST /api/patients/:id/assign-room`
+
+## Deployment
+
+**Frontend (Netlify):**
+- URL: https://visionary-brigadeiros-5fc1fd.netlify.app
+- Framework: Next.js with Tailwind CSS
+- Features: Patient management, room assignment, real-time updates
+
+**Backend (Railway):**
+- URL: https://web-production-68a4f3.up.railway.app
+- Framework: Node.js/Express with MongoDB Atlas
+- Features: RESTful API, JWT authentication, Socket.IO
+
+**Database:**
+- MongoDB Atlas (Cloud)
+- Collections: Users, Patients, Rooms
+- Real-time data synchronization
 
 ## Local Development
 
