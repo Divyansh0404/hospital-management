@@ -36,11 +36,13 @@ Password: test123
 
 ## 🏥 Available Features
 
-- ✅ **Patient Management**: Add, view, update patients
+- ✅ **Patient Management**: Add, view, update patients with active/past patient separation
 - ✅ **Room Assignment**: Assign patients to available rooms
 - ✅ **Authentication**: Secure login with JWT tokens
 - ✅ **Real-time Updates**: Live room status via Socket.IO
 - ✅ **Responsive Design**: Works on desktop and mobile
+- ✅ **Patient History**: Separate tabs for active and discharged patients
+- ✅ **Medical Records**: Track admission dates, discharge dates, and patient status
 
 ## 🛠 Technical Stack
 
@@ -58,6 +60,8 @@ Password: test123
 5. **Responsive UI**: Modern design with Tailwind CSS
 6. **API Design**: RESTful endpoints with proper error handling
 7. **Deployment**: Production deployment on cloud platforms
+8. **User Experience**: Tabbed interface for active vs discharged patients
+9. **Data Management**: Patient history tracking with admission/discharge dates
 
 ---
 
