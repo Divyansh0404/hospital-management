@@ -21,6 +21,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Plus, UserMinus, Home, Search, Loader2 } from "lucide-react"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { patientsAPI, roomsAPI } from "@/lib/api"
 import { useToast } from "@/hooks/use-toast"
 
@@ -33,6 +34,7 @@ interface Patient {
   status: "Admitted" | "Discharged" | "Pending"
   assignedRoom: string | null | { _id: string; roomNumber: string; type: string; floor: number }
   admissionDate: string
+  dischargeDate?: string | null
   contactNumber: string
   medicalHistory?: string
   allergies?: string[]
@@ -63,6 +65,7 @@ export default function PatientsPage() {
   const [rooms, setRooms] = useState<Room[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState("")
+  const [activeTab, setActiveTab] = useState("active") // "active" or "past"
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null)
   const [newPatient, setNewPatient] = useState({
@@ -125,6 +128,15 @@ export default function PatientsPage() {
         (typeof patient.assignedRoom === 'object' 
           ? patient.assignedRoom.roomNumber.toLowerCase().includes(searchTerm.toLowerCase())
           : patient.assignedRoom.toLowerCase().includes(searchTerm.toLowerCase()))),
+  )
+
+  // Separate active and past patients
+  const activePatients = filteredPatients.filter(patient => 
+    patient.status === "Admitted" || patient.status === "Pending"
+  )
+
+  const pastPatients = filteredPatients.filter(patient => 
+    patient.status === "Discharged"
   )
 
   const getPriorityColor = (priority: number) => {
@@ -300,7 +312,14 @@ export default function PatientsPage() {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <h2 className="text-2xl font-bold text-foreground">Patient Management</h2>
-            <p className="text-muted-foreground">Manage patient admissions, discharges, and room assignments</p>
+            <p className="text-muted-foreground">
+              Manage patient admissions, discharges, and room assignments
+            </p>
+            <div className="flex gap-4 mt-2 text-sm text-muted-foreground">
+              <span>Active: {activePatients.length}</span>
+              <span>Past: {pastPatients.length}</span>
+              <span>Total: {patients.length}</span>
+            </div>
           </div>
           <Dialog open={isAddModalOpen} onOpenChange={setIsAddModalOpen}>
             <DialogTrigger asChild>
@@ -468,79 +487,167 @@ export default function PatientsPage() {
           </CardContent>
         </Card>
 
-        {/* Patients Table */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Current Patients ({filteredPatients.length})</CardTitle>
-            <CardDescription>Overview of all patients in the hospital</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Age</TableHead>
-                  <TableHead>Condition</TableHead>
-                  <TableHead>Priority</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Assigned Room</TableHead>
-                  <TableHead>Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredPatients.map((patient) => (
-                  <TableRow key={patient._id}>
-                    <TableCell className="font-medium">{patient.name}</TableCell>
-                    <TableCell>{patient.age}</TableCell>
-                    <TableCell>{patient.condition}</TableCell>
-                    <TableCell>
-                      <Badge className={getPriorityColor(patient.priority)}>{getPriorityLabel(patient.priority)}</Badge>
-                    </TableCell>
-                    <TableCell>
-                      <Badge className={getStatusColor(patient.status)}>{patient.status}</Badge>
-                    </TableCell>
-                    <TableCell>
-                      {patient.assignedRoom 
-                        ? (typeof patient.assignedRoom === 'object' 
-                            ? patient.assignedRoom.roomNumber 
-                            : patient.assignedRoom)
-                        : "Not assigned"}
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex space-x-2">
-                        {patient.status === "Admitted" && (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleDischarge(patient._id)}
-                            className="text-destructive hover:text-destructive"
-                          >
-                            <UserMinus className="w-4 h-4 mr-1" />
-                            Discharge
-                          </Button>
-                        )}
-                        {!patient.assignedRoom && patient.status !== "Discharged" && (
-                          <Select onValueChange={(roomId) => handleAssignRoom(patient._id, roomId)}>
-                            <SelectTrigger className="w-32">
-                              <SelectValue placeholder="Assign Room" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {rooms.filter(room => !room.occupied).map((room) => (
-                                <SelectItem key={room._id} value={room._id}>
-                                  {room.roomNumber}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        )}
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
+        {/* Patients Tabs */}
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="active">
+              Active Patients ({activePatients.length})
+            </TabsTrigger>
+            <TabsTrigger value="past">
+              Past Patients ({pastPatients.length})
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="active" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Active Patients ({activePatients.length})</CardTitle>
+                <CardDescription>Currently admitted and pending patients</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Name</TableHead>
+                      <TableHead>Age</TableHead>
+                      <TableHead>Condition</TableHead>
+                      <TableHead>Priority</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Assigned Room</TableHead>
+                      <TableHead>Admission Date</TableHead>
+                      <TableHead>Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {activePatients.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
+                          No active patients found
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      activePatients.map((patient) => (
+                        <TableRow key={patient._id}>
+                          <TableCell className="font-medium">{patient.name}</TableCell>
+                          <TableCell>{patient.age}</TableCell>
+                          <TableCell>{patient.condition}</TableCell>
+                          <TableCell>
+                            <Badge className={getPriorityColor(patient.priority)}>{getPriorityLabel(patient.priority)}</Badge>
+                          </TableCell>
+                          <TableCell>
+                            <Badge className={getStatusColor(patient.status)}>{patient.status}</Badge>
+                          </TableCell>
+                          <TableCell>
+                            {patient.assignedRoom 
+                              ? (typeof patient.assignedRoom === 'object' 
+                                  ? patient.assignedRoom.roomNumber 
+                                  : patient.assignedRoom)
+                              : "Not assigned"}
+                          </TableCell>
+                          <TableCell>
+                            {new Date(patient.admissionDate).toLocaleDateString()}
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex space-x-2">
+                              {patient.status === "Admitted" && (
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => handleDischarge(patient._id)}
+                                  className="text-destructive hover:text-destructive"
+                                >
+                                  <UserMinus className="w-4 h-4 mr-1" />
+                                  Discharge
+                                </Button>
+                              )}
+                              {!patient.assignedRoom && patient.status !== "Discharged" && (
+                                <Select onValueChange={(roomId) => handleAssignRoom(patient._id, roomId)}>
+                                  <SelectTrigger className="w-32">
+                                    <SelectValue placeholder="Assign Room" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    {rooms.filter(room => !room.occupied).map((room) => (
+                                      <SelectItem key={room._id} value={room._id}>
+                                        {room.roomNumber}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                              )}
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    )}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="past" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Past Patients ({pastPatients.length})</CardTitle>
+                <CardDescription>Discharged patients and medical history</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Name</TableHead>
+                      <TableHead>Age</TableHead>
+                      <TableHead>Condition</TableHead>
+                      <TableHead>Priority</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Last Room</TableHead>
+                      <TableHead>Admission Date</TableHead>
+                      <TableHead>Discharge Date</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {pastPatients.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
+                          No past patients found
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      pastPatients.map((patient) => (
+                        <TableRow key={patient._id}>
+                          <TableCell className="font-medium">{patient.name}</TableCell>
+                          <TableCell>{patient.age}</TableCell>
+                          <TableCell>{patient.condition}</TableCell>
+                          <TableCell>
+                            <Badge className={getPriorityColor(patient.priority)}>{getPriorityLabel(patient.priority)}</Badge>
+                          </TableCell>
+                          <TableCell>
+                            <Badge className={getStatusColor(patient.status)}>{patient.status}</Badge>
+                          </TableCell>
+                          <TableCell>
+                            {patient.assignedRoom 
+                              ? (typeof patient.assignedRoom === 'object' 
+                                  ? patient.assignedRoom.roomNumber 
+                                  : patient.assignedRoom)
+                              : "Not assigned"}
+                          </TableCell>
+                          <TableCell>
+                            {new Date(patient.admissionDate).toLocaleDateString()}
+                          </TableCell>
+                          <TableCell>
+                            {patient.dischargeDate 
+                              ? new Date(patient.dischargeDate).toLocaleDateString()
+                              : "N/A"}
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    )}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
       </div>
     </DashboardLayout>
     </ProtectedRoute>
