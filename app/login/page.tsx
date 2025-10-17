@@ -1,26 +1,41 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Alert, AlertDescription } from "@/components/ui/alert"
+import { Checkbox } from "@/components/ui/checkbox"
 import { Loader2, Heart, Mail, Lock, Eye, EyeOff } from "lucide-react"
 import { authAPI } from "@/lib/api"
 import { useToast } from "@/hooks/use-toast"
+import { useAuth } from "@/components/auth-provider"
 import Link from "next/link"
 
 export default function LoginPage() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
+  const [rememberMe, setRememberMe] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
   
   const router = useRouter()
   const { toast } = useToast()
+  const { login } = useAuth()
+
+  // Load saved credentials if "Remember Me" was checked
+  useEffect(() => {
+    const savedEmail = localStorage.getItem('remembered_email')
+    const savedRememberMe = localStorage.getItem('remember_me') === 'true'
+    
+    if (savedEmail && savedRememberMe) {
+      setEmail(savedEmail)
+      setRememberMe(true)
+    }
+  }, [])
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -28,16 +43,25 @@ export default function LoginPage() {
     setError("")
 
     try {
-      const response = await authAPI.login(email, password)
+      const success = await login(email, password, rememberMe)
       
-      if (response.success) {
+      if (success) {
+        // Handle "Remember Me" functionality
+        if (rememberMe) {
+          localStorage.setItem('remembered_email', email)
+          localStorage.setItem('remember_me', 'true')
+        } else {
+          localStorage.removeItem('remembered_email')
+          localStorage.removeItem('remember_me')
+        }
+
         toast({
           title: "Login Successful",
-          description: `Welcome back, ${response.data.user.name}!`,
+          description: `Welcome back!`,
         })
         router.push("/")
       } else {
-        setError(response.message || "Login failed")
+        setError("Invalid email or password")
       }
     } catch (error: any) {
       console.error("Login error:", error)
@@ -112,6 +136,20 @@ export default function LoginPage() {
                 </div>
               </div>
 
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="remember"
+                  checked={rememberMe}
+                  onCheckedChange={(checked) => setRememberMe(checked as boolean)}
+                />
+                <Label
+                  htmlFor="remember"
+                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                >
+                  Remember me
+                </Label>
+              </div>
+
               <Button
                 type="submit"
                 className="w-full bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white"
@@ -128,23 +166,7 @@ export default function LoginPage() {
               </Button>
             </form>
 
-            <div className="text-center space-y-4">
-              <div className="relative">
-                <div className="absolute inset-0 flex items-center">
-                  <span className="w-full border-t" />
-                </div>
-                <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-background px-2 text-muted-foreground">Demo Accounts</span>
-                </div>
-              </div>
-
-              <div className="grid gap-2 text-sm">
-                <div className="p-3 bg-muted/50 rounded-lg">
-                  <p className="font-medium">Admin Account</p>
-                  <p className="text-muted-foreground">admin@hospital.com / admin123</p>
-                </div>
-              </div>
-
+            <div className="text-center">
               <p className="text-sm text-muted-foreground">
                 Don't have an account?{" "}
                 <Link href="/register" className="text-blue-600 hover:text-blue-500 font-medium">

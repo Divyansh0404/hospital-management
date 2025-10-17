@@ -325,6 +325,55 @@ class PatientController {
   }
 
   /**
+   * Delete patient (For testing purposes only - not recommended for production)
+   */
+  static async deletePatient(req, res) {
+    try {
+      const { id } = req.params;
+
+      const patient = await Patient.findById(id);
+
+      if (!patient) {
+        return res.status(404).json({
+          success: false,
+          message: 'Patient not found'
+        });
+      }
+
+      // If patient has assigned room, free it up
+      if (patient.assignedRoom) {
+        await Room.findByIdAndUpdate(patient.assignedRoom, {
+          occupied: false,
+          patientId: null,
+          status: 'Available'
+        });
+      }
+
+      // Delete the patient
+      await Patient.findByIdAndDelete(id);
+
+      res.json({
+        success: true,
+        message: 'Patient deleted successfully',
+        data: {
+          deletedPatient: {
+            id: patient._id,
+            name: patient.name
+          }
+        }
+      });
+
+    } catch (error) {
+      console.error('Delete patient error:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Internal server error',
+        error: process.env.NODE_ENV === 'development' ? error.message : undefined
+      });
+    }
+  }
+
+  /**
    * Assign patient to room
    */
   static async assignRoom(req, res) {

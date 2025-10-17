@@ -248,4 +248,16 @@ router.post('/:id/assign-room',
   PatientController.assignRoom
 );
 
+/**
+ * @route   DELETE /api/patients/:id
+ * @desc    Delete patient (For testing purposes only)
+ * @access  Private (Admin only)
+ */
+router.delete('/:id', 
+  authenticateToken,
+  authorizeRoles('Admin'),
+  idValidation,
+  PatientController.deletePatient
+);
+
 module.exports = router;

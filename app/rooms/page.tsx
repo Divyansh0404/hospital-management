@@ -85,14 +85,22 @@ export default function RoomsPage() {
     try {
       const response = await patientsAPI.getAll(1, 50)
       if (response.success) {
-        // Filter patients who are admitted but don't have assigned rooms
+        // Filter patients who are admitted or pending but don't have assigned rooms
         const unassignedPatients = response.data.patients.filter(
-          (patient: any) => patient.status === "Admitted" && !patient.assignedRoom
+          (patient: any) => 
+            (patient.status === "Admitted" || patient.status === "Pending") && 
+            !patient.assignedRoom
         )
+        console.log('Available patients for assignment:', unassignedPatients) // Debug log
         setAvailablePatients(unassignedPatients)
       }
     } catch (error) {
       console.error('Failed to fetch patients:', error)
+      toast({
+        title: "Error",
+        description: "Failed to fetch available patients",
+        variant: "destructive",
+      })
     }
   }
 
@@ -358,55 +366,85 @@ export default function RoomsPage() {
                     </Button>
                   )}
                   {room.status === "Available" && (
-                    <Dialog open={isAssignModalOpen} onOpenChange={setIsAssignModalOpen}>
-                      <DialogTrigger asChild>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => setSelectedRoom(room)}
-                          className="flex-1 text-primary hover:text-primary"
-                        >
-                          <UserPlus className="w-4 h-4 mr-1" />
-                          Assign Patient
-                        </Button>
-                      </DialogTrigger>
-                      <DialogContent>
-                        <DialogHeader>
-                          <DialogTitle>Assign Patient to {selectedRoom?.roomNumber}</DialogTitle>
-                          <DialogDescription>Select a patient to assign to this room.</DialogDescription>
-                        </DialogHeader>
-                        <div className="grid gap-4 py-4">
-                          <div className="grid grid-cols-4 items-center gap-4">
-                            <Label htmlFor="patient" className="text-right">
-                              Patient
-                            </Label>
-                            <Select value={selectedPatient} onValueChange={setSelectedPatient}>
-                              <SelectTrigger className="col-span-3">
-                                <SelectValue placeholder="Select a patient" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {availablePatients.map((patient) => (
-                                  <SelectItem key={patient._id} value={patient._id}>
-                                    {patient.name}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                          </div>
-                        </div>
-                        <DialogFooter>
-                          <Button onClick={handleAssignPatient} disabled={!selectedPatient}>
-                            Assign Patient
-                          </Button>
-                        </DialogFooter>
-                      </DialogContent>
-                    </Dialog>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setSelectedRoom(room)
+                        setSelectedPatient("") // Reset selection
+                        setIsAssignModalOpen(true)
+                      }}
+                      className="flex-1 text-primary hover:text-primary"
+                    >
+                      <UserPlus className="w-4 h-4 mr-1" />
+                      Assign Patient
+                    </Button>
                   )}
                 </div>
               </CardContent>
             </Card>
           ))}
         </div>
+
+        {/* Assign Patient Modal */}
+        <Dialog open={isAssignModalOpen} onOpenChange={setIsAssignModalOpen}>
+          <DialogContent className="sm:max-w-[425px]">
+            <DialogHeader>
+              <DialogTitle>Assign Patient to {selectedRoom?.roomNumber}</DialogTitle>
+              <DialogDescription>
+                Select a patient to assign to this room.
+                {availablePatients.length === 0 && (
+                  <span className="block mt-2 text-orange-600">
+                    No unassigned patients available. All admitted patients are already assigned to rooms.
+                  </span>
+                )}
+              </DialogDescription>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="patient" className="text-right">
+                  Patient
+                </Label>
+                <Select value={selectedPatient} onValueChange={setSelectedPatient}>
+                  <SelectTrigger className="col-span-3">
+                    <SelectValue placeholder={
+                      availablePatients.length === 0 
+                        ? "No patients available" 
+                        : "Select a patient"
+                    } />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {availablePatients.length === 0 ? (
+                      <SelectItem value="" disabled>
+                        No unassigned patients available
+                      </SelectItem>
+                    ) : (
+                      availablePatients.map((patient) => (
+                        <SelectItem key={patient._id} value={patient._id}>
+                          {patient.name} (Status: {patient.status})
+                        </SelectItem>
+                      ))
+                    )}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <DialogFooter>
+              <Button 
+                variant="outline" 
+                onClick={() => setIsAssignModalOpen(false)}
+              >
+                Cancel
+              </Button>
+              <Button 
+                onClick={handleAssignPatient} 
+                disabled={!selectedPatient || availablePatients.length === 0}
+              >
+                Assign Patient
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </DashboardLayout>
     </ProtectedRoute>
