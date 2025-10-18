@@ -285,6 +285,72 @@ class AuthController {
   }
 
   /**
+   * Verify persistent token and establish new session
+   */
+  static async verifyPersistentToken(req, res) {
+    try {
+      const { token } = req.body;
+
+      if (!token) {
+        return res.status(400).json({
+          success: false,
+          message: 'Token is required'
+        });
+      }
+
+      // Verify and decode the token
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      
+      // Find the user
+      const user = await User.findById(decoded.userId).select('-passwordHash');
+      
+      if (!user || !user.isActive) {
+        return res.status(401).json({
+          success: false,
+          message: 'Invalid token or user not found'
+        });
+      }
+
+      // Update last login
+      await user.updateLastLogin();
+
+      // Generate new session token
+      const newToken = AuthController.generateToken(user._id);
+
+      res.json({
+        success: true,
+        message: 'Token verified successfully',
+        data: {
+          user: user.toJSON(),
+          token: newToken
+        }
+      });
+
+    } catch (error) {
+      console.error('Token verification error:', error);
+      
+      if (error.name === 'TokenExpiredError') {
+        return res.status(401).json({
+          success: false,
+          message: 'Token has expired'
+        });
+      }
+      
+      if (error.name === 'JsonWebTokenError') {
+        return res.status(401).json({
+          success: false,
+          message: 'Invalid token'
+        });
+      }
+
+      res.status(500).json({
+        success: false,
+        message: 'Internal server error'
+      });
+    }
+  }
+
+  /**
    * Generate JWT token
    * @private
    */
@@ -325,6 +391,66 @@ class AuthController {
     };
 
     return permissionSets[role] || permissionSets['Staff'];
+  }
+
+  /**
+   * Verify persistent token and establish new session
+   */
+  static async verifyPersistentToken(req, res) {
+    try {
+      const { token } = req.body;
+
+      if (!token) {
+        return res.status(400).json({
+          success: false,
+          message: 'Token is required'
+        });
+      }
+
+      // Verify the token
+      let decoded;
+      try {
+        decoded = jwt.verify(token, process.env.JWT_SECRET);
+      } catch (jwtError) {
+        return res.status(401).json({
+          success: false,
+          message: 'Invalid or expired token'
+        });
+      }
+
+      // Find the user
+      const user = await User.findById(decoded.userId).select('-passwordHash');
+      
+      if (!user || !user.isActive) {
+        return res.status(401).json({
+          success: false,
+          message: 'User not found or inactive'
+        });
+      }
+
+      // Update last login
+      await user.updateLastLogin();
+
+      // Generate new token for the session
+      const newToken = AuthController.generateToken(user._id);
+
+      res.json({
+        success: true,
+        message: 'Token verified successfully',
+        data: {
+          user: user.toJSON(),
+          token: newToken
+        }
+      });
+
+    } catch (error) {
+      console.error('Token verification error:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Internal server error',
+        error: process.env.NODE_ENV === 'development' ? error.message : undefined
+      });
+    }
   }
 }
 

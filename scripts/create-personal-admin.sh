@@ -36,7 +36,7 @@ RESPONSE=$(curl -s -X POST "$API_URL" \
     \"department\": \"Administration\",
     \"role\": \"Admin\",
     \"phone\": \"$PHONE\",
-    \"shift\": \"Day\"
+    \"shift\": \"Morning\"
   }")
 
 # Check if the response contains success

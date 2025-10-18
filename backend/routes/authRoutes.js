@@ -163,4 +163,13 @@ router.post('/logout',
   AuthController.logout
 );
 
+/**
+ * @route   POST /api/auth/verify-token
+ * @desc    Verify persistent token and establish new session
+ * @access  Public
+ */
+router.post('/verify-token', 
+  AuthController.verifyPersistentToken
+);
+
 module.exports = router;

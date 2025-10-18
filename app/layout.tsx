@@ -2,7 +2,10 @@ import type React from "react"
 import type { Metadata } from "next"
 import { SocketProvider } from "@/components/socket-provider"
 import { AuthProvider } from "@/components/auth-provider"
+import { ConsoleErrorFilter } from "@/components/console-error-filter"
+import { ErrorBoundary } from "@/components/error-boundary"
 import { Toaster } from "@/components/ui/toaster"
+import "@/lib/error-suppression"
 import "./globals.css"
 
 export const metadata: Metadata = {
@@ -27,12 +30,15 @@ export default function RootLayout({
         />
       </head>
       <body>
-        <AuthProvider>
-          <SocketProvider>
-            {children}
-            <Toaster />
-          </SocketProvider>
-        </AuthProvider>
+        <ConsoleErrorFilter />
+        <ErrorBoundary>
+          <AuthProvider>
+            <SocketProvider>
+              {children}
+              <Toaster />
+            </SocketProvider>
+          </AuthProvider>
+        </ErrorBoundary>
       </body>
     </html>
   )

@@ -20,7 +20,7 @@ async function createLocalAdmin() {
     department: 'Administration',
     role: 'Admin',
     phone: '555-0123',
-    shift: 'Day'
+    shift: 'Morning'
   };
   
   console.log('🏥 Creating Local Admin Account');

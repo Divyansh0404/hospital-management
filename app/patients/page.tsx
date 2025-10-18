@@ -20,10 +20,11 @@ import {
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Plus, UserMinus, Home, Search, Loader2 } from "lucide-react"
+import { Plus, UserMinus, Home, Search, Loader2, ChevronLeft, ChevronRight } from "lucide-react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { patientsAPI, roomsAPI } from "@/lib/api"
 import { useToast } from "@/hooks/use-toast"
+import { LoadingBar, SkeletonLoader, AsyncButton } from "@/components/ui/loading"
 
 interface Patient {
   _id: string
@@ -64,10 +65,21 @@ export default function PatientsPage() {
   const [patients, setPatients] = useState<Patient[]>([])
   const [rooms, setRooms] = useState<Room[]>([])
   const [loading, setLoading] = useState(true)
+  const [pageLoading, setPageLoading] = useState(false)
   const [searchTerm, setSearchTerm] = useState("")
   const [activeTab, setActiveTab] = useState("active") // "active" or "past"
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null)
+  
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1)
+  const [totalPages, setTotalPages] = useState(1)
+  const [totalPatients, setTotalPatients] = useState(0)
+  const [itemsPerPage] = useState(10)
+  
+  // Form loading states
+  const [addingPatient, setAddingPatient] = useState(false)
+  
   const [newPatient, setNewPatient] = useState({
     name: "",
     age: "",
@@ -90,12 +102,37 @@ export default function PatientsPage() {
     fetchRooms()
   }, [])
 
-  const fetchPatients = async () => {
+  // Pagination handlers
+  const handlePageChange = async (newPage: number) => {
+    if (newPage >= 1 && newPage <= totalPages && newPage !== currentPage) {
+      await fetchPatients(newPage, true)
+    }
+  }
+
+  const handleNextPage = () => handlePageChange(currentPage + 1)
+  const handlePrevPage = () => handlePageChange(currentPage - 1)
+
+  const fetchPatients = async (page = 1, showPageLoading = false) => {
     try {
-      setLoading(true)
-      const response = await patientsAPI.getAll(1, 50) // Get more patients for demo
+      if (showPageLoading) {
+        setPageLoading(true)
+      } else {
+        setLoading(true)
+      }
+      
+      const response = await patientsAPI.getAll(page, itemsPerPage)
       if (response.success) {
         setPatients(response.data.patients)
+        if (response.data.pagination) {
+          setTotalPages(response.data.pagination.totalPages)
+          setTotalPatients(response.data.pagination.totalPatients)
+          setCurrentPage(response.data.pagination.currentPage)
+        } else {
+          // Fallback for older API responses
+          setTotalPages(1)
+          setTotalPatients(response.data.patients.length)
+          setCurrentPage(page)
+        }
       }
     } catch (error) {
       console.error('Failed to fetch patients:', error)
@@ -106,6 +143,7 @@ export default function PatientsPage() {
       })
     } finally {
       setLoading(false)
+      setPageLoading(false)
     }
   }
 
@@ -189,6 +227,7 @@ export default function PatientsPage() {
   const handleAddPatient = async () => {
     if (newPatient.name && newPatient.age && newPatient.contactNumber) {
       try {
+        setAddingPatient(true)
         const patientData = {
           name: newPatient.name,
           age: Number.parseInt(newPatient.age),
@@ -239,6 +278,8 @@ export default function PatientsPage() {
           description: "Failed to admit patient",
           variant: "destructive",
         })
+      } finally {
+        setAddingPatient(false)
       }
     }
   }
@@ -307,7 +348,8 @@ export default function PatientsPage() {
   return (
     <ProtectedRoute>
       <DashboardLayout currentPage="patients">
-      <div className="space-y-6">
+        <LoadingBar isLoading={pageLoading} message="Loading patients..." />
+        <div className="space-y-6">
         {/* Header Section */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
@@ -460,9 +502,15 @@ export default function PatientsPage() {
                 </div>
               </div>
               <DialogFooter>
-                <Button type="submit" onClick={handleAddPatient}>
+                <AsyncButton 
+                  type="submit" 
+                  onClick={handleAddPatient}
+                  loading={addingPatient}
+                  loadingText="Adding Patient..."
+                  className="bg-primary text-primary-foreground hover:bg-primary/90"
+                >
                   Admit Patient
-                </Button>
+                </AsyncButton>
               </DialogFooter>
             </DialogContent>
           </Dialog>
@@ -582,6 +630,55 @@ export default function PatientsPage() {
                   </TableBody>
                 </Table>
               </CardContent>
+              
+              {/* Pagination Controls */}
+              {totalPages > 1 && (
+                <div className="flex items-center justify-between px-6 py-4 border-t">
+                  <div className="text-sm text-muted-foreground">
+                    Showing {Math.min((currentPage - 1) * itemsPerPage + 1, totalPatients)} to{' '}
+                    {Math.min(currentPage * itemsPerPage, totalPatients)} of {totalPatients} patients
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handlePrevPage}
+                      disabled={currentPage === 1 || pageLoading}
+                    >
+                      <ChevronLeft className="w-4 h-4" />
+                      Previous
+                    </Button>
+                    
+                    <div className="flex items-center space-x-1">
+                      {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                        const page = Math.max(1, Math.min(totalPages - 4, currentPage - 2)) + i
+                        return (
+                          <Button
+                            key={page}
+                            variant={currentPage === page ? "default" : "outline"}
+                            size="sm"
+                            onClick={() => handlePageChange(page)}
+                            disabled={pageLoading}
+                            className="w-8 h-8 p-0"
+                          >
+                            {page}
+                          </Button>
+                        )
+                      })}
+                    </div>
+                    
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleNextPage}
+                      disabled={currentPage === totalPages || pageLoading}
+                    >
+                      Next
+                      <ChevronRight className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </div>
+              )}
             </Card>
           </TabsContent>
 

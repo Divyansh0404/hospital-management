@@ -18,9 +18,10 @@ import {
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Bed, Users, UserPlus, UserMinus, Search, Loader2 } from "lucide-react"
+import { Bed, Users, UserPlus, UserMinus, Search, Loader2, ChevronLeft, ChevronRight } from "lucide-react"
 import { roomsAPI, patientsAPI } from "@/lib/api"
 import { useToast } from "@/hooks/use-toast"
+import { LoadingBar, SkeletonLoader, AsyncButton } from "@/components/ui/loading"
 
 interface Room {
   _id: string
@@ -47,7 +48,14 @@ export default function RoomsPage() {
   const [rooms, setRooms] = useState<Room[]>([])
   const [availablePatients, setAvailablePatients] = useState<Patient[]>([])
   const [loading, setLoading] = useState(true)
+  const [pageLoading, setPageLoading] = useState(false)
   const [searchTerm, setSearchTerm] = useState("")
+  
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1)
+  const [totalPages, setTotalPages] = useState(1)
+  const [totalRooms, setTotalRooms] = useState(0)
+  const [itemsPerPage] = useState(12)
   const [filterType, setFilterType] = useState<string>("all")
   const [filterStatus, setFilterStatus] = useState<string>("all")
   const [selectedRoom, setSelectedRoom] = useState<Room | null>(null)

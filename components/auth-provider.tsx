@@ -61,10 +61,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       
       if (!isRemembered && expirationTime && Date.now() > parseInt(expirationTime)) {
         clearAuthToken()
+        localStorage.removeItem('hospital_auth_remember')
+        localStorage.removeItem('hospital_auth_expiration')
         setIsLoading(false)
         return
       }
 
+      // Try to verify the token first, especially for remembered sessions
+      if (isRemembered) {
+        try {
+          const verifyResponse = await authAPI.verifyToken(token)
+          if (verifyResponse.success) {
+            setUser(verifyResponse.data.user)
+            setIsLoading(false)
+            return
+          }
+        } catch (verifyError) {
+          console.log("Token verification failed, trying profile endpoint")
+        }
+      }
+
+      // Fallback to profile endpoint
       const response = await authAPI.getProfile()
       if (response.success) {
         setUser(response.data.user)

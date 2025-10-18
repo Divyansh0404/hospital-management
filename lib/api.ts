@@ -84,6 +84,19 @@ export const authAPI = {
   logout: () => {
     clearAuthToken();
   },
+
+  verifyToken: async (token: string) => {
+    const response = await apiRequest('/auth/verify-token', {
+      method: 'POST',
+      body: JSON.stringify({ token }),
+    });
+    
+    if (response.success && response.data.token) {
+      setAuthToken(response.data.token);
+    }
+    
+    return response;
+  },
 };
 
 // Patients API

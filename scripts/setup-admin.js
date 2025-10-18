@@ -107,7 +107,7 @@ async function createPersonalAdminAccount() {
       department: 'Administration',
       role: 'Admin',
       phone,
-      shift: 'Day'
+      shift: 'Morning'
     };
     
     // Create the admin account
@@ -213,7 +213,7 @@ async function quickSetup() {
     department: 'Administration',
     role: 'Admin',
     phone: '555-0123',  // CHANGE THIS
-    shift: 'Day'
+    shift: 'Morning'
   };
   
   console.log('⚠️  Please modify the personalAdmin object in this script with your actual credentials before running quickSetup()');
