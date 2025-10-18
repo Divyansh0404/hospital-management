@@ -21,7 +21,7 @@ import { Home, Users, Building2, Menu, Bell, Settings, LogOut, User } from "luci
 
 interface DashboardLayoutProps {
   children: React.ReactNode
-  currentPage: "dashboard" | "patients" | "rooms"
+  currentPage: "dashboard" | "patients" | "rooms" | "profile" | "settings"
 }
 
 export function DashboardLayout({ children, currentPage }: DashboardLayoutProps) {
@@ -137,6 +137,8 @@ export function DashboardLayout({ children, currentPage }: DashboardLayoutProps)
                 {currentPage === "dashboard" && "Dashboard"}
                 {currentPage === "patients" && "Patient Management"}
                 {currentPage === "rooms" && "Room Management"}
+                {currentPage === "profile" && "My Profile"}
+                {currentPage === "settings" && "Account Settings"}
               </h1>
             </div>
 
@@ -165,11 +167,11 @@ export function DashboardLayout({ children, currentPage }: DashboardLayoutProps)
                     </div>
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem>
+                  <DropdownMenuItem onClick={(e) => handleNavigation('/profile', e)}>
                     <User className="mr-2 h-4 w-4" />
                     <span>Profile</span>
                   </DropdownMenuItem>
-                  <DropdownMenuItem>
+                  <DropdownMenuItem onClick={(e) => handleNavigation('/settings', e)}>
                     <Settings className="mr-2 h-4 w-4" />
                     <span>Settings</span>
                   </DropdownMenuItem>

@@ -81,6 +81,28 @@ export const authAPI = {
     return apiRequest('/auth/profile');
   },
 
+  updateProfile: async (profileData: {
+    firstName?: string;
+    lastName?: string;
+    phone?: string;
+    email?: string;
+  }) => {
+    return apiRequest('/auth/profile', {
+      method: 'PUT',
+      body: JSON.stringify(profileData),
+    });
+  },
+
+  changePassword: async (passwordData: {
+    currentPassword: string;
+    newPassword: string;
+  }) => {
+    return apiRequest('/auth/change-password', {
+      method: 'PUT',
+      body: JSON.stringify(passwordData),
+    });
+  },
+
   logout: () => {
     clearAuthToken();
   },
